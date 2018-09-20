@@ -2,12 +2,12 @@ package vero
 
 import (
 	"fmt"
-
 	"bytes"
 	"encoding/json"
-	"github.com/uniplaces/vero-go"
 	"io/ioutil"
 	"net/http"
+
+        "github.com/uniplaces/vero-go"
 )
 
 const (
