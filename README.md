@@ -23,10 +23,10 @@ data["Last name"] = "Kane"
  
 email := "jeff@yourdomain.com"
  
-client.Identify("1234567890", data, email)
+client.Identify("1234567890", data, &email)
  
 // Unsubscribe
-client.Usubscribe("1234567890", data, email)
+client.Usubscribe("1234567890")
  
 // Tags
 add := []string{"Blog reader"}

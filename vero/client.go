@@ -1,33 +1,33 @@
 package vero
 
 import (
-	"fmt"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
-        "github.com/uniplaces/vero-go"
+	"github.com/uniplaces/vero-go"
 )
 
-const (
-	usersBaseUrl  = "https://api.getvero.com/api/v2/users/%v"
-	eventsBaseUrl = "https://api.getvero.com/api/v2/events/%v"
-)
+const baseUrl = "https://api.getvero.com/api/v2/%v"
 
-type client struct {
+// VeroClient manages requests to the Vero API
+type VeroClient struct {
 	authToken string
+	baseUrl   string
 }
 
 type requestData map[string]interface{}
 
 // NewClient returns a new instance of the Vero client
 func NewClient(authToken string) vero_go.Client {
-	return client{authToken: authToken}
+	return VeroClient{authToken: authToken, baseUrl: baseUrl}
 }
 
-func (client client) Identify(userId string, data map[string]interface{}, email *string) ([]byte, error) {
-	endpoint := client.buildEndpoint(usersBaseUrl, "track")
+// Identify creates a new user profile if the user doesn’t exist yet
+func (client VeroClient) Identify(userId string, data map[string]interface{}, email *string) ([]byte, error) {
+	endpoint := client.buildEndpoint("users/track")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -40,8 +40,9 @@ func (client client) Identify(userId string, data map[string]interface{}, email 
 	return client.send(endpoint, requestData, http.MethodPost)
 }
 
-func (client client) Reidentify(userId string, newUserId string) ([]byte, error) {
-	endpoint := client.buildEndpoint(usersBaseUrl, "reidentify")
+// Reidentify updates user id from existing user
+func (client VeroClient) Reidentify(userId string, newUserId string) ([]byte, error) {
+	endpoint := client.buildEndpoint("users/reidentify")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -51,8 +52,9 @@ func (client client) Reidentify(userId string, newUserId string) ([]byte, error)
 	return client.send(endpoint, requestData, http.MethodPut)
 }
 
-func (client client) Update(userId string, changes map[string]interface{}) ([]byte, error) {
-	endpoint := client.buildEndpoint(usersBaseUrl, "edit")
+// Update updates information from existing user
+func (client VeroClient) Update(userId string, changes map[string]interface{}) ([]byte, error) {
+	endpoint := client.buildEndpoint("users/edit")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -62,8 +64,9 @@ func (client client) Update(userId string, changes map[string]interface{}) ([]by
 	return client.send(endpoint, requestData, http.MethodPut)
 }
 
-func (client client) Tags(userId string, add []string, remove []string) ([]byte, error) {
-	endpoint := client.buildEndpoint(usersBaseUrl, "tags/edit")
+// Tags lets you add or remove tags to or from any of your users
+func (client VeroClient) Tags(userId string, add []string, remove []string) ([]byte, error) {
+	endpoint := client.buildEndpoint("users/tags/edit")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -74,8 +77,9 @@ func (client client) Tags(userId string, add []string, remove []string) ([]byte,
 	return client.send(endpoint, requestData, http.MethodPut)
 }
 
-func (client client) Unsubscribe(userId string) ([]byte, error) {
-	endpoint := client.buildEndpoint(usersBaseUrl, "unsubscribe")
+// Unsubscribe unsubscribes a single user
+func (client VeroClient) Unsubscribe(userId string) ([]byte, error) {
+	endpoint := client.buildEndpoint("users/unsubscribe")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -84,8 +88,9 @@ func (client client) Unsubscribe(userId string) ([]byte, error) {
 	return client.send(endpoint, requestData, http.MethodPost)
 }
 
-func (client client) Resubscribe(userId string) ([]byte, error) {
-	endpoint := client.buildEndpoint(usersBaseUrl, "resubscribe")
+// Resubscribe lets you resubscribe a single user
+func (client VeroClient) Resubscribe(userId string) ([]byte, error) {
+	endpoint := client.buildEndpoint("users/resubscribe")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -94,7 +99,8 @@ func (client client) Resubscribe(userId string) ([]byte, error) {
 	return client.send(endpoint, requestData, http.MethodPost)
 }
 
-func (client client) Track(
+// Track endpoint tracks an event for a specific customer. If the customer profile doesn’t exist, Vero will create it
+func (client VeroClient) Track(
 	eventName string,
 	identity map[string]string,
 	data map[string]interface{},
@@ -103,7 +109,7 @@ func (client client) Track(
 	[]byte,
 	error,
 ) {
-	endpoint := client.buildEndpoint(eventsBaseUrl, "track")
+	endpoint := client.buildEndpoint("events/track")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -115,11 +121,11 @@ func (client client) Track(
 	return client.send(endpoint, requestData, http.MethodPost)
 }
 
-func (client) buildEndpoint(baseUrl string, endpoint string) string {
-	return fmt.Sprintf(baseUrl, endpoint)
+func (client VeroClient) buildEndpoint(endpoint string) string {
+	return fmt.Sprintf(client.baseUrl, endpoint)
 }
 
-func (client) send(url string, data map[string]interface{}, method string) ([]byte, error) {
+func (VeroClient) send(url string, data map[string]interface{}, method string) ([]byte, error) {
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return []byte{}, err

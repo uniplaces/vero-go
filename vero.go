@@ -4,7 +4,7 @@ type Client interface {
 	Identify(userId string, data map[string]interface{}, email *string) ([]byte, error)
 	Reidentify(userId string, newUserId string) ([]byte, error)
 	Update(userId string, changes map[string]interface{}) ([]byte, error)
-	Tags(userId string, add map[int]string, remove map[int]string) ([]byte, error)
+	Tags(userId string, add []string, remove []string) ([]byte, error)
 	Unsubscribe(userId string) ([]byte, error)
 	Resubscribe(userId string) ([]byte, error)
 	Track(
