@@ -10,7 +10,10 @@ import (
 	"net/http"
 )
 
-const baseUrl = "https://api.getvero.com/api/v2/users/%v"
+const (
+	usersBaseUrl  = "https://api.getvero.com/api/v2/users/%v"
+	eventsBaseUrl = "https://api.getvero.com/api/v2/events/%v"
+)
 
 type client struct {
 	authToken string
@@ -23,8 +26,8 @@ func NewClient(authToken string) vero_go.Client {
 	return client{authToken: authToken}
 }
 
-func (client) Identify(userId string, data map[string]interface{}, email *string) ([]byte, error) {
-	endpoint := client.buildEndpoint("track")
+func (client client) Identify(userId string, data map[string]interface{}, email *string) ([]byte, error) {
+	endpoint := client.buildEndpoint(usersBaseUrl, "track")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -34,33 +37,33 @@ func (client) Identify(userId string, data map[string]interface{}, email *string
 		data["email"] = *email
 	}
 
-	return client.send(endpoint, data, http.MethodPost)
+	return client.send(endpoint, requestData, http.MethodPost)
 }
 
-func (client) Reidentify(userId string, newUserId string) ([]byte, error) {
-	endpoint := client.buildEndpoint("reidentify")
+func (client client) Reidentify(userId string, newUserId string) ([]byte, error) {
+	endpoint := client.buildEndpoint(usersBaseUrl, "reidentify")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
 	requestData["id"] = userId
 	requestData["new_id"] = newUserId
 
-	return client.send(endpoint, data, http.MethodPut)
+	return client.send(endpoint, requestData, http.MethodPut)
 }
 
-func (client) Update(userId string, changes map[string]interface{}) ([]byte, error) {
-	endpoint := client.buildEndpoint("edit")
+func (client client) Update(userId string, changes map[string]interface{}) ([]byte, error) {
+	endpoint := client.buildEndpoint(usersBaseUrl, "edit")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
 	requestData["id"] = userId
 	requestData["changes"] = changes
 
-	return client.send(endpoint, data, http.MethodPut)
+	return client.send(endpoint, requestData, http.MethodPut)
 }
 
-func (client) Tags(userId string, add map[int]string, remove map[int]string) ([]byte, error) {
-	endpoint := client.buildEndpoint("edit")
+func (client client) Tags(userId string, add []string, remove []string) ([]byte, error) {
+	endpoint := client.buildEndpoint(usersBaseUrl, "tags/edit")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -68,30 +71,30 @@ func (client) Tags(userId string, add map[int]string, remove map[int]string) ([]
 	requestData["add"] = add
 	requestData["remove"] = remove
 
-	return client.send(endpoint, data, http.MethodPut)
+	return client.send(endpoint, requestData, http.MethodPut)
 }
 
-func (client) Unsubscribe(userId string) ([]byte, error) {
-	endpoint := client.buildEndpoint("unsubscribe")
+func (client client) Unsubscribe(userId string) ([]byte, error) {
+	endpoint := client.buildEndpoint(usersBaseUrl, "unsubscribe")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
 	requestData["id"] = userId
 
-	return client.send(endpoint, data, http.MethodPost)
+	return client.send(endpoint, requestData, http.MethodPost)
 }
 
-func (client) Resubscribe(userId string) ([]byte, error) {
-	endpoint := client.buildEndpoint("resubscribe")
+func (client client) Resubscribe(userId string) ([]byte, error) {
+	endpoint := client.buildEndpoint(usersBaseUrl, "resubscribe")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
 	requestData["id"] = userId
 
-	return client.send(endpoint, data, http.MethodPost)
+	return client.send(endpoint, requestData, http.MethodPost)
 }
 
-func (client) Track(
+func (client client) Track(
 	eventName string,
 	identity map[string]string,
 	data map[string]interface{},
@@ -100,7 +103,7 @@ func (client) Track(
 	[]byte,
 	error,
 ) {
-	endpoint := client.buildEndpoint("track")
+	endpoint := client.buildEndpoint(eventsBaseUrl, "track")
 
 	requestData := requestData{}
 	requestData["auth_token"] = client.authToken
@@ -109,10 +112,10 @@ func (client) Track(
 	requestData["data"] = data
 	requestData["extras"] = extras
 
-	return client.send(endpoint, data, http.MethodPost)
+	return client.send(endpoint, requestData, http.MethodPost)
 }
 
-func (client) buildEndpoint(endpoint string) string {
+func (client) buildEndpoint(baseUrl string, endpoint string) string {
 	return fmt.Sprintf(baseUrl, endpoint)
 }
 
@@ -130,7 +133,7 @@ func (client) send(url string, data map[string]interface{}, method string) ([]by
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("Content-Type", "application/json")
 
-	response, err := http.Client{}.Do(request)
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return []byte{}, err
 	}
