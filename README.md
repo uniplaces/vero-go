@@ -1,6 +1,6 @@
 # vero-go
 
-Basic Golang client for[Vero](https://www.getvero.com/)developed at Uniplaces
+Basic Golang client for [Vero](https://www.getvero.com/) developed at Uniplaces
 
 ## Usage
 
