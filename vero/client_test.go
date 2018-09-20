@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestClientCreation(t *testing.T) {
@@ -168,6 +166,12 @@ func TestTrack(t *testing.T) {
 	client.Track("booking-request", identity, data, extras)
 }
 
+func assertEqual(t *testing.T, expected string, actual string) {
+        if expected != actual {
+                t.Errorf(`Expected: %v - Got: %v`, expected, actual)
+        }
+}
+
 func configureHandler(
 	serverMux *http.ServeMux,
 	t *testing.T,
@@ -181,10 +185,10 @@ func configureHandler(
 			buf := new(bytes.Buffer)
 			buf.ReadFrom(r.Body)
 			body := buf.String()
-
-			assert.Equal(t, expectedRequestBody, body)
-			assert.Equal(t, endpoint, r.URL.Path)
-			assert.Equal(t, method, r.Method)
+                        
+                        assertEqual(t, expectedRequestBody, body)
+                        assertEqual(t, endpoint, r.URL.Path)
+                        assertEqual(t, method, r.Method)
 
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte{})
