@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/uniplaces/vero-go"
+	"github.com/pkg/errors"
 )
 
 const baseUrl = "https://api.getvero.com/api/v2/%v"
@@ -149,5 +150,18 @@ func (VeroClient) send(url string, data map[string]interface{}, method string) (
 		return []byte{}, err
 	}
 
+	if response.StatusCode != http.StatusOK {
+		return []byte{}, createErrorWithHTTPResponseMessage(body)
+	}
+
 	return body, nil
+}
+
+func createErrorWithHTTPResponseMessage(responseBody []byte) error {
+	var responseData map[string]interface{}
+	if err := json.Unmarshal(responseBody, &responseData); err != nil {
+		return err
+	}
+
+	return errors.New(fmt.Sprintf("%s", responseData["message"]))
 }
