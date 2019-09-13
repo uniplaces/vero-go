@@ -167,9 +167,9 @@ func TestTrack(t *testing.T) {
 }
 
 func assertEqual(t *testing.T, expected string, actual string) {
-        if expected != actual {
-                t.Errorf(`Expected: %v - Got: %v`, expected, actual)
-        }
+	if expected != actual {
+		t.Errorf(`Expected: %v - Got: %v`, expected, actual)
+	}
 }
 
 func configureHandler(
@@ -185,10 +185,10 @@ func configureHandler(
 			buf := new(bytes.Buffer)
 			buf.ReadFrom(r.Body)
 			body := buf.String()
-                        
-                        assertEqual(t, expectedRequestBody, body)
-                        assertEqual(t, endpoint, r.URL.Path)
-                        assertEqual(t, method, r.Method)
+
+			assertEqual(t, expectedRequestBody, body)
+			assertEqual(t, endpoint, r.URL.Path)
+			assertEqual(t, method, r.Method)
 
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte{})

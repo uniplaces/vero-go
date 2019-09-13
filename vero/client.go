@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/uniplaces/vero-go"
 	"github.com/pkg/errors"
+	"github.com/uniplaces/vero-go"
 )
 
 const baseUrl = "https://api.getvero.com/api/v2/%v"
@@ -137,6 +137,7 @@ func (VeroClient) send(url string, data map[string]interface{}, method string) (
 		return []byte{}, err
 	}
 
+	request.Close = true
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("Content-Type", "application/json")
 
@@ -144,6 +145,8 @@ func (VeroClient) send(url string, data map[string]interface{}, method string) (
 	if err != nil {
 		return []byte{}, err
 	}
+
+	defer response.Body.Close()
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
