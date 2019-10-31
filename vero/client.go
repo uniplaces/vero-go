@@ -161,10 +161,5 @@ func (VeroClient) send(url string, data map[string]interface{}, method string) (
 }
 
 func createErrorWithHTTPResponseMessage(responseBody []byte) error {
-	var responseData map[string]interface{}
-	if err := json.Unmarshal(responseBody, &responseData); err != nil {
-		return err
-	}
-
-	return errors.New(fmt.Sprintf("%s", responseData["message"]))
+	return errors.New(string(responseBody))
 }
